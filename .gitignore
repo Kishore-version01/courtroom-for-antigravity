@@ -28,12 +28,19 @@ MANIFEST
 
 # Virtual Environments
 .env
+.env.*
 .venv
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Antigravity & Agent Scratch/Logs
 .agents/
@@ -42,9 +49,8 @@ brain/
 scratch/
 *.log
 
-# Case trials runtime data (optional to ignore generated test runs)
-.court/cases/*/ballots/
-.court/cases/*/dossier.json
+# Court runtime data
+.court/
 
 # Operating System Files
 .DS_Store
