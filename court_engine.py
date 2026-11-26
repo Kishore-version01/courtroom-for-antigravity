@@ -104,10 +104,10 @@ def load_configuration(env: Optional[Mapping[str, str]] = None) -> CourtConfig:
         project_name=source.get("COURT_PROJECT_NAME", "Courtroom for Antigravity"),
         project_version=source.get("COURT_PROJECT_VERSION", "0.1.0"),
         runtime_dir=source.get("COURT_RUNTIME_DIR", ".court"),
-        log_level=raw_level.strip().upper() if isinstance(raw_level, str) else str(raw_level),
+        log_level=raw_level.strip().upper(),
         log_format=source.get("COURT_LOG_FORMAT", DEFAULT_LOG_FORMAT),
         log_date_format=source.get("COURT_LOG_DATE_FORMAT", DEFAULT_LOG_DATE_FORMAT),
-        default_trial_mode=raw_mode.strip().lower() if isinstance(raw_mode, str) else str(raw_mode),
+        default_trial_mode=raw_mode.strip().lower(),
     )
     config.validate()
     return config

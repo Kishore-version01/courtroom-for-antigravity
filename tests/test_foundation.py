@@ -17,7 +17,6 @@ if str(REPO_ROOT) not in sys.path:
 import court_engine  # noqa: E402
 from court_engine import (  # noqa: E402
     ConfigurationError,
-    CourtConfig,
     CourtError,
     InitializationError,
     ProjectStructureError,
@@ -132,7 +131,7 @@ def test_logging_initializes_and_avoids_duplicate_handlers() -> None:
     assert logger2.propagate is False
 
 
-def test_logging_respects_configured_levels(caplog: pytest.LogCaptureFixture) -> None:
+def test_logging_respects_configured_levels(capsys: pytest.CaptureFixture[str]) -> None:
     logger_name = _unique_logger_name()
     config = load_configuration({"COURT_LOG_LEVEL": "WARNING"})
     logger = initialize_logging(config, logger_name=logger_name)
@@ -141,6 +140,12 @@ def test_logging_respects_configured_levels(caplog: pytest.LogCaptureFixture) ->
     assert logger.handlers[0].level == logging.WARNING
     assert not logger.isEnabledFor(logging.INFO)
     assert logger.isEnabledFor(logging.WARNING)
+
+    logger.info("suppressed info message")
+    logger.warning("visible warning message")
+    captured = capsys.readouterr()
+    assert "suppressed info message" not in captured.err
+    assert "visible warning message" in captured.err
 
 
 # ---------------------------------------------------------------------------
