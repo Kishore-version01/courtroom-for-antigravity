@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://courtroom.antigravity/schemas/dossier/1.0.0",
+  "title": "Courtroom Trial Dossier",
+  "description": "Frozen, domain-agnostic trial record provided to isolated juror agents.",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case",
+    "prosecution",
+    "defence",
+    "evidence",
+    "constraints",
+    "assumptions",
+    "context"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+      "description": "Semantic version of the dossier schema contract."
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "title", "proposal"],
+      "description": "Core case identity and proposal statement.",
+      "properties": {
+        "case_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique deterministic case identifier."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concise human-readable title of the proposal on trial."
+        },
+        "proposal": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Full text or summary of the proposal being evaluated."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional ISO 8601 UTC timestamp when the dossier was created."
+        }
+      }
+    },
+    "prosecution": {
+      "$ref": "#/$defs/side_case",
+      "description": "Structured adversarial arguments against the proposal."
+    },
+    "defence": {
+      "$ref": "#/$defs/side_case",
+      "description": "Structured supporting arguments and mitigations for the proposal."
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence_item"
+      },
+      "description": "Domain-agnostic evidence items supplied to the trial."
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/constraint_item"
+      },
+      "description": "Explicit operational, financial, technical, or policy constraints."
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/assumption_item"
+      },
+      "description": "Explicit unverified assumptions used in preparing the case."
+    },
+    "context": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/context_item"
+      },
+      "description": "Supplementary domain-agnostic background context."
+    }
+  },
+  "$defs": {
+    "side_case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "arguments"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concise thesis summarizing this side's position."
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/argument_item"
+          },
+          "description": "Ordered list of structured arguments."
+        }
+      }
+    },
+    "argument_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "tag"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique argument identifier within the dossier."
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Substantive argument statement."
+        },
+        "tag": {
+          "type": "string",
+          "enum": ["FACT", "ASSUMPTION", "OPINION"],
+          "description": "Evidentiary classification tag."
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Optional list of evidence_id references supporting this claim."
+        }
+      }
+    },
+    "evidence_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "title", "content", "source", "evidence_type"],
+      "properties": {
+        "evidence_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique evidence identifier."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short descriptive title of the evidence."
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Factual content or excerpt of the evidence."
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Verifiable origin (file path, spec URL, or benchmark reference)."
+        },
+        "evidence_type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Category of evidence (e.g., repository_file, specification, metric)."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Optional key-value string metadata."
+        }
+      }
+    },
+    "constraint_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique constraint identifier."
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Constraint domain (e.g., budget, timeline, compliance, technical)."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Clear statement of the constraint."
+        }
+      }
+    },
+    "assumption_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique assumption identifier."
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Explicitly unverified premise or forecast."
+        },
+        "risk_note": {
+          "type": "string",
+          "description": "Optional note on impact if the assumption proves false."
+        }
+      }
+    },
+    "context_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "topic", "detail"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique context entry identifier."
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Subject area of the background context."
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Supplementary contextual detail."
+        }
+      }
+    }
+  }
+}

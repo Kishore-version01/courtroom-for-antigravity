@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "case": {
+    "case_id": "2026-11-26-postgres-to-dynamodb",
+    "title": "Migrate PostgreSQL to DynamoDB",
+    "proposal": "Migrate primary relational order storage from PostgreSQL to DynamoDB.",
+    "created_at": "2026-11-26T13:00:00Z"
+  },
+  "prosecution": {
+    "summary": "Relational query patterns and dual-write consistency risks are under-addressed.",
+    "arguments": [
+      {
+        "id": "pros-1",
+        "claim": "Ad-hoc reporting joins will require secondary pipelines once normalized tables are removed.",
+        "tag": "FACT",
+        "evidence_refs": ["ev-1"]
+      }
+    ]
+  },
+  "defence": {
+    "summary": "Single-table key access eliminates connection-pool exhaustion at peak traffic.",
+    "arguments": [
+      {
+        "id": "def-1",
+        "claim": "95% of hot-path reads look up orders by primary key.",
+        "tag": "ASSUMPTION"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "evidence_id": "ev-1",
+      "title": "Order Service Query Inventory",
+      "content": "Analytics exports execute 4 multi-table joins nightly.",
+      "source": "docs/architecture/order_queries.md",
+      "evidence_type": "repository_file",
+      "metadata": {
+        "component": "order-service"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "con-1",
+      "category": "operational",
+      "description": "Zero-downtime cutover required during business hours."
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "asm-1",
+      "statement": "Peak write throughput will not exceed 10,000 WCU during Q4.",
+      "risk_note": "On-demand burst throttling if exceeded."
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx-1",
+      "topic": "Team Experience",
+      "detail": "Core backend team has 3 years of PostgreSQL experience and limited DynamoDB experience."
+    }
+  ]
+}

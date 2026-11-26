@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://courtroom.antigravity/schemas/ballot/1.0.0",
+  "title": "Courtroom Juror Ballot",
+  "description": "Structured, neutral vote payload submitted by an isolated juror agent.",
+  "version": "1.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "vote",
+    "confidence",
+    "critical_objections",
+    "concessions",
+    "dissent"
+  ],
+  "properties": {
+    "vote": {
+      "type": "string",
+      "enum": ["GUILTY", "NOT_GUILTY", "ABSTAIN"],
+      "description": "Exact case-sensitive juror verdict: GUILTY, NOT_GUILTY, or ABSTAIN."
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Integer confidence score from 0 to 100 inclusive."
+    },
+    "critical_objections": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Non-discardable list of critical blockers raised by the juror."
+    },
+    "concessions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Aspects of the proposal acknowledged as valid or well-defended."
+    },
+    "dissent": {
+      "type": "string",
+      "description": "Juror's dissenting reasoning or explanatory note; empty string if none."
+    }
+  }
+}

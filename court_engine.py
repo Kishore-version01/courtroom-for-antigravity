@@ -7,13 +7,14 @@ directory initialization.
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import dataclass
 import logging
 import os
 from pathlib import Path
 import sys
 import tempfile
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Sequence
 
 
 VALID_LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
@@ -280,8 +281,70 @@ def display_status(config: CourtConfig) -> None:
     print("Phase 2 Status: NOT IMPLEMENTED")
 
 
-def main() -> int:
-    """Run Phase 1 foundation initialization sequence."""
+def _build_argument_parser() -> argparse.ArgumentParser:
+    """Build CLI argument parser for foundation and schema validation commands."""
+    parser = argparse.ArgumentParser(
+        prog="court_engine.py",
+        description="Courtroom for Antigravity — Engine & Schema Validation CLI",
+    )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--validate-ballot",
+        metavar="PATH",
+        help="Validate a juror ballot JSON file against schemas/ballot_schema.json.",
+    )
+    group.add_argument(
+        "--validate-dossier",
+        metavar="PATH",
+        help="Validate a trial dossier JSON file against schemas/dossier_schema.json.",
+    )
+    return parser
+
+
+def _run_schema_validation_cli(target_path: Path, kind: str) -> int:
+    """Run CLI validation for a ballot or dossier JSON file."""
+    from schema_validator import (
+        BALLOT_SCHEMA_NAME,
+        DOSSIER_SCHEMA_NAME,
+        SchemaValidationError,
+        get_schema_version,
+        load_json_payload,
+        validate_ballot,
+        validate_dossier,
+    )
+
+    label = "Ballot" if kind == "ballot" else "Dossier"
+    schema_name = BALLOT_SCHEMA_NAME if kind == "ballot" else DOSSIER_SCHEMA_NAME
+    validator_fn = validate_ballot if kind == "ballot" else validate_dossier
+
+    try:
+        payload = load_json_payload(target_path)
+        validator_fn(payload)
+        version = get_schema_version(schema_name)
+        print(f"{label} Validation: PASS")
+        print(f"Schema Version: {version}")
+        return 0
+    except SchemaValidationError as exc:
+        print(f"{label} Validation: FAIL", file=sys.stderr)
+        if exc.errors:
+            print("\nErrors:", file=sys.stderr)
+            for err in exc.errors:
+                print(f"- {err}", file=sys.stderr)
+        else:
+            print(f"\nErrors:\n- {exc}", file=sys.stderr)
+        return 1
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    """Run Phase 1 foundation initialization or Phase 2 schema validation."""
+    parser = _build_argument_parser()
+    args = parser.parse_args(list(argv) if argv is not None else [])
+
+    if args.validate_ballot:
+        return _run_schema_validation_cli(Path(args.validate_ballot), kind="ballot")
+    if args.validate_dossier:
+        return _run_schema_validation_cli(Path(args.validate_dossier), kind="dossier")
+
     try:
         config = load_configuration()
         paths = initialize_paths(config)
@@ -298,4 +361,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))
